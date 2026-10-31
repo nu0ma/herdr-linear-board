@@ -110,8 +110,8 @@ in 11px `dim`). The title block and the footer stay; the sections between them s
 
 ## Built from
 
-- `mods/linear-board/main.js`: the board, a `View`, default export. It makes one `Card` for each
-  card on show with `cx.new`, from `init`, event handlers and tasks, never during render. `mod.json`:
+- `mods/linear-board/main.js`: the board, a `View`, default export. It draws the header, chips,
+  columns and cards itself, in one render with one `card` method. `mod.json`:
   `{ "place": "none", "title": "Linear board", "overlay": { "width": 0.94, "height": 0.9 } }`.
 - `mods/linear-board/sync.js`: pure `SYNC_TOOLS`, `SYNC_PROMPT`, `parseSync`, `parseRepos`,
   `NO_PROJECT`. The sync runs, in the home folder, with stdin closed:
@@ -121,8 +121,6 @@ in 11px `dim`). The title block and the footer stay; the sections between them s
   state type, with assignee `me`, limit 100 and the fields id, title, url, priority, createdAt,
   status, statusType, labels, team, project, parentId, gitBranchName. `parseSync` reads the issues
   from the tool results in the stream, so nothing passes through the model.
-- `mods/linear-board/card.js`: `Card`, a `View` retained as a child of the board, updated with
-  `set_props`; `stateIcon`; and `board`, the team folders and overlay id its buttons need.
 - `mods/linear-board/board.js`: pure `STATE_COLORS`, `stateKind`, `boardColumns`, `limitCards`,
   `projectsOf`, `filterIssues`, `shortDate`, `ago`.
 - `mods/linear-board/urls.js` (`safeUrl`: https only) and `open.js` (`openUrl`, by
@@ -152,18 +150,22 @@ in 11px `dim`). The title block and the footer stay; the sections between them s
 - Inside a running Claude session the environment carries markers that break a nested `claude -p`:
   unset them first. Leaving stdin open makes it wait.
 - A mod can't import another mod's files. The folders share nothing but the `props` of the dialog.
-- A render has a time budget. Drawn inline, 24 full cards overrun it: the view shows `interrupted`
-  and stays on its last good frame, which here was the spinner. `herdr-app check` passes all the
-  same, so test with many cards. As child views each card has its own budget, but about 200 still
-  overrun the board's render, so it shows 80 and only makes the views it shows: making them all at
-  once overruns too.
-- Cold code freezes the window. Herdr's JIT (`rquickjs_jit`) copies its whole feedback table as a
-  function's call count reaches 1, 2, 4 … 64, about 70 to 140 ms a time on the main thread, and every
-  open evaluates the module again. A board's first render does that dozens of times, so each open
-  froze the window for 4 to 6 s, with little to do with the card count. `globalThis` outlives a copy,
-  so each `main.js` exports the first class it stored there, as long as the source matches. Building
-  the cards in batches made it worse: more renders of cold code. `Date.now()` marks show the delay on
-  whatever happened to run, so profile with `sample <pid>` during the freeze.
+- Fresh JS can freeze a Herdr that has run for a long time. As functions warm up, Herdr's JIT
+  (`rquickjs_jit`) copies its whole feedback table on the main thread. After hours of mod reloads and
+  experiments that took about 0.2 s a time, and the old board, with far more functions, froze the
+  window for about 15 s in all over its first opens. A freshly started Herdr took none of it, with the
+  same code: 700 opens of another mod didn't bring it back, so what fills the table is still unknown.
+  So the path that draws the board runs few functions: `render`, `card`, plain loops, no `.when`, no
+  `.map`, no compare callback. That halved the total. Moving the sort alone changed nothing: the
+  freeze just lands on the next function. `Date.now()` marks show gaps of about 0.2 s on whatever
+  happened to run, so profile with `sample <pid>` during the freeze.
+- Every open evaluates all the mod's modules again, imports too, so a new class would start cold each
+  time. `globalThis` outlives a copy: each `main.js` exports the first class it stored there, as long
+  as the source matches.
+- A render that a freeze pushes past its budget is dropped: the view shows `interrupted` and stays on
+  its last good frame, here the spinner, with nothing to draw it again. `herdr-app check` passes all
+  the same. `render` sets `this.drawing` until it finishes, and a one-second timer redraws while it's
+  still set. Hundreds of cards overrun the budget by themselves, so the board shows 80.
 - `uniform_list` and `v_virtual_list` can't hold handlers inside a row, so they can't carry the
   `Agent` button. Sizes given to `v_virtual_list` also ignore the app's zoom.
 - The MCP gives no state colors and no label colors: states use Linear's defaults by kind, and a
