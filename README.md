@@ -120,6 +120,8 @@ team always use one repo, create `~/.config/herdr-app/linear-board.json`:
 
 - **Syncing costs a model run.** Each sync is one short `haiku` run on your Claude plan, so the board
   syncs at most every 30 minutes while open, or when you press `Refresh`. Issues can be up to that old.
+- **The first open after starting Herdr takes a few seconds** while Herdr warms up the mod's code.
+  Later opens are nearly instant.
 - **Closing the board during a sync drops the result.** The next open syncs again.
 - **80 cards at most.** Herdr limits how long a render may take, so past 80 cards each column says how
   many more it has. Filters reach the rest.

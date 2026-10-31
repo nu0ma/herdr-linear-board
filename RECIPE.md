@@ -73,7 +73,8 @@ in 11px `dim`). The title block and the footer stay; the sections between them s
   review, where review is a started state with "review" in its name. In a column: Urgent, High,
   Medium, Low, then no priority. At most 80 cards show, shared out one at a time across the columns,
   and filters reach the rest. The counts always cover every issue.
-- Every open is a new copy of the mod. The issues are kept in shared state (`linear-board.snapshot`),
+- Every open is a new copy of the mod, but both mods reuse the view class from the first open, so
+  only that first open pays for cold code. The issues are kept in shared state (`linear-board.snapshot`),
   so they show at once. It then reads `~/.config/herdr-app/linear-board-issues.json` and takes that
   when it's newer.
 - It syncs when there is nothing newer than 30 minutes, every 30 minutes while open, and on
@@ -154,6 +155,13 @@ in 11px `dim`). The title block and the footer stay; the sections between them s
   same, so test with many cards. As child views each card has its own budget, but about 200 still
   overrun the board's render, so it shows 80 and only makes the views it shows: making them all at
   once overruns too.
+- Cold code freezes the window. Herdr's JIT (`rquickjs_jit`) copies its whole feedback table as a
+  function's call count reaches 1, 2, 4 … 64, about 70 to 140 ms a time on the main thread, and every
+  open evaluates the module again. A board's first render does that dozens of times, so each open
+  froze the window for 4 to 6 s, with little to do with the card count. `globalThis` outlives a copy,
+  so each `main.js` exports the first class it stored there, as long as the source matches. Building
+  the cards in batches made it worse: more renders of cold code. `Date.now()` marks show the delay on
+  whatever happened to run, so profile with `sample <pid>` during the freeze.
 - `uniform_list` and `v_virtual_list` can't hold handlers inside a row, so they can't carry the
   `Agent` button. Sizes given to `v_virtual_list` also ignore the app's zoom.
 - The MCP gives no state colors and no label colors: states use Linear's defaults by kind, and a
@@ -177,7 +185,7 @@ in 11px `dim`). The title block and the footer stay; the sections between them s
   many more each column has.
 - `ctrl-shift-y` opens the board with your issues in state columns, with a spinner until the first
   sync ends.
-- Reopening it shows the issues at once, with no spinner and no sync.
+- Reopening it shows the issues at once, with no spinner and no sync, and the window doesn't freeze.
 - A project button narrows the columns to that project, and it is still chosen after reopening.
 - Clicking a card opens the issue in the browser.
 - `Agent` on a card, from a space inside a git repo, Claude Code, `haiku`, `low`, Start: a new space
