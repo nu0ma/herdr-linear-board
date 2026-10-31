@@ -9,14 +9,14 @@ const stream = (results) => results.flatMap(([state, content], i) => [
   JSON.stringify({ message: { content: [{ type: "tool_result", tool_use_id: `c${i}`, content: [{ type: "text", text: content }] }] } }),
 ]).join("\n");
 const answer = (issues = []) => JSON.stringify({ issues });
-const raw = { id: "MP-1", title: "t", url: "u", priority: { value: 1, name: "Urgent" }, createdAt: "2026-10-30T09:00:00Z", status: "Backlog", statusType: "backlog", labels: ["GCS"], project: "P", parentId: null };
+const raw = { id: "ENG-1", title: "t", url: "u", priority: { value: 1, name: "Urgent" }, createdAt: "2026-10-30T09:00:00Z", status: "Backlog", statusType: "backlog", labels: ["API"], project: "P", parentId: null };
 
 test("parseSync reads issues from the tool results", () => {
   const [issue] = parseSync(stream([["triage", answer()], ["backlog", answer([raw])], ["unstarted", answer()], ["started", answer()]]));
-  assert.equal(issue.identifier, "MP-1");
-  assert.equal(issue.team, "MP");
+  assert.equal(issue.identifier, "ENG-1");
+  assert.equal(issue.team, "ENG");
   assert.equal(issue.priority, 1);
-  assert.equal(issue.labels[0].name, "GCS");
+  assert.equal(issue.labels[0].name, "API");
 });
 
 test("a state without an answer fails the sync", () => {
@@ -24,17 +24,17 @@ test("a state without an answer fails the sync", () => {
 });
 
 test("parseRepos expands ~ and tolerates a missing or broken file", () => {
-  assert.deepEqual(parseRepos('{ "repos": { "mp": "~/dev/app" } }', "/h"), { MP: "/h/dev/app" });
+  assert.deepEqual(parseRepos('{ "repos": { "eng": "~/dev/app" } }', "/h"), { ENG: "/h/dev/app" });
   assert.deepEqual(parseRepos(null, "/h"), {});
   assert.deepEqual(parseRepos("not json", "/h"), {});
 });
 
 test("filterIssues by id or title", () => {
-  const issues = [{ identifier: "MP-1", title: "Fix login" }, { identifier: "MP-2", title: "Idea" }];
+  const issues = [{ identifier: "ENG-1", title: "Fix login" }, { identifier: "ENG-2", title: "Idea" }];
   const ids = (list) => list.map((i) => i.identifier);
-  assert.deepEqual(ids(filterIssues(issues, "LOGIN")), ["MP-1"]);
-  assert.deepEqual(ids(filterIssues(issues, "mp-2")), ["MP-2"]);
-  assert.deepEqual(ids(filterIssues(issues, " ")), ["MP-1", "MP-2"]);
+  assert.deepEqual(ids(filterIssues(issues, "LOGIN")), ["ENG-1"]);
+  assert.deepEqual(ids(filterIssues(issues, "eng-2")), ["ENG-2"]);
+  assert.deepEqual(ids(filterIssues(issues, " ")), ["ENG-1", "ENG-2"]);
 });
 
 test("projectsOf counts projects, biggest first and no project last", () => {
@@ -43,21 +43,21 @@ test("projectsOf counts projects, biggest first and no project last", () => {
 });
 
 test("filterIssues narrows by project along with the text", () => {
-  const issues = [{ identifier: "MP-1", title: "a", project: "A" }, { identifier: "MP-2", title: "b", project: "B" }];
-  assert.deepEqual(filterIssues(issues, "", "B").map((i) => i.identifier), ["MP-2"]);
-  assert.deepEqual(filterIssues(issues, "mp-1", "B"), []);
+  const issues = [{ identifier: "ENG-1", title: "a", project: "A" }, { identifier: "ENG-2", title: "b", project: "B" }];
+  assert.deepEqual(filterIssues(issues, "", "B").map((i) => i.identifier), ["ENG-2"]);
+  assert.deepEqual(filterIssues(issues, "eng-1", "B"), []);
   assert.equal(filterIssues(issues, "").length, 2);
 });
 
 test("boardColumns orders states and puts urgent issues first", () => {
   const issue = (identifier, state, stateType, priority = 0) => ({ identifier, state, stateType, priority });
   const columns = boardColumns([
-    issue("MP-1", "In Review", "started"), issue("MP-2", "In Progress", "started"), issue("MP-3", "Todo", "unstarted"),
-    issue("MP-4", "Backlog", "backlog"), issue("MP-5", "Backlog", "backlog", 3), issue("MP-6", "Backlog", "backlog", 1), issue("MP-7", "Triage", "triage"),
+    issue("ENG-1", "In Review", "started"), issue("ENG-2", "In Progress", "started"), issue("ENG-3", "Todo", "unstarted"),
+    issue("ENG-4", "Backlog", "backlog"), issue("ENG-5", "Backlog", "backlog", 3), issue("ENG-6", "Backlog", "backlog", 1), issue("ENG-7", "Triage", "triage"),
   ]);
   assert.deepEqual(columns.map((c) => c.name), ["Triage", "Backlog", "Todo", "In Progress", "In Review"]);
   assert.equal(columns.at(-1).kind, "review");
-  assert.deepEqual(columns[1].issues.map((i) => i.identifier), ["MP-6", "MP-5", "MP-4"]);
+  assert.deepEqual(columns[1].issues.map((i) => i.identifier), ["ENG-6", "ENG-5", "ENG-4"]);
 });
 
 test("ago takes an ISO date or a timestamp", () => {
