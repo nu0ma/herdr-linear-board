@@ -8,12 +8,7 @@
 [![Herdr mod](https://img.shields.io/badge/Herdr-mod-4cb782.svg)](https://herdr.dev/mods)
 [![No API key](https://img.shields.io/badge/Linear%20API%20key-not%20needed-5e6ad2.svg)](#requirements)
 
-<p>
-  <img src="preview.png" alt="The Linear board with issues in state columns" width="61%">
-  <img src="agent-dialog.png" alt="The dialog that starts an agent on an issue" width="35%">
-</p>
-
-<sub>Your issues by state on the left. Start an agent on one from the dialog on the right.</sub>
+<img src="demo.gif" alt="Filtering the board by project, pressing Agent on a card and Claude Code starting on the issue" width="100%">
 
 </div>
 
@@ -44,6 +39,8 @@ flowchart LR
 ## Run an agent
 
 Press `Agent` on a card to open the dialog:
+
+<p align="center"><img src="agent-dialog.png" alt="The dialog that starts an agent on an issue" width="420"></p>
 
 | Field | What it does |
 |---|---|
@@ -127,6 +124,8 @@ team always use one repo, create `~/.config/herdr-app/linear-board.json`:
 - **80 cards at most.** Herdr limits how long a render may take, so past 80 cards each column says how
   many more it has. Filters reach the rest.
 - **Assigned issues only**, up to 100 per state type, not completed or canceled.
+- **Claude Code may ask to trust the new worktree.** Choose `Yes, I trust this folder`: the issue
+  arrives as soon as you do. The default answer, `No, exit`, ends the session.
 - **`Not a git repository`** means the space you're in isn't a repo. Open the board from one, or map
   the team as above.
 - **`Linear MCP gave no answer`** means the connector isn't available to `claude -p`. Run the check

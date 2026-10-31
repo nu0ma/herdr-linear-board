@@ -165,6 +165,9 @@ in 11px `dim`). The title block and the footer stay; the sections between them s
   whitespace replaced by one space.
 - The issue's description isn't loaded, so the task asks the agent to read the issue itself.
 - Mapped `repos` folders are on this computer; leave a team unmapped for a remote space.
+- A worktree is a new folder, so Claude Code can stop at its trust prompt before the first message.
+  The task waits and arrives once the person chooses `Yes, I trust this folder`. Enter alone picks
+  the default, `No, exit`.
 - `Agent` from a folder outside a git repo fails with `Not a git repository`.
 
 ## Done when
