@@ -30,7 +30,7 @@ async function syncIssues() {
   return parseSync(r.stdout);
 }
 
-export default class Linear extends View {
+class Linear extends View {
   init(_props, cx) {
     this.issues = []; this.cards = new Map(); this.text = ""; this.loading = false; this.project = shared(PROJECT_KEY) ?? null;
     board.overlay = props()?.overlay ?? null;
@@ -161,3 +161,10 @@ export default class Linear extends View {
       .when(!waiting && !columns.length, (e) => e.child(div().p(16).text_color(this.error ? t.ansi1 : t.dim).child(this.emptyText())));
   }
 }
+
+// Every open evaluates this module again, and the app's JIT does slow bookkeeping as fresh code warms
+// up: the window froze for seconds on each open. Reusing the view from the first open keeps its code
+// warm. The source is compared so a changed mod still takes effect.
+const source = [Linear, Card, syncIssues, parseSync, parseRepos, boardColumns, filterIssues, limitCards, projectsOf].map(String).join();
+if (globalThis.__linearBoard?.source !== source) globalThis.__linearBoard = { source, view: Linear };
+export default globalThis.__linearBoard.view;

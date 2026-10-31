@@ -75,7 +75,7 @@ async function modelsFor(agent, on) {
   return models;
 }
 
-export default class LinearAgent extends View {
+class LinearAgent extends View {
   init(_props, cx) {
     this.issue = props()?.issue ?? { identifier: "", title: "Open this from a card on the Linear board", url: "", branchName: "" };
     this.agents = []; this.models = []; this.filter = "";
@@ -235,3 +235,10 @@ export default class LinearAgent extends View {
       .child(div().flex_none().child(this.footer(t)));
   }
 }
+
+// Every open evaluates this module again, and the app's JIT does slow bookkeeping as fresh code warms
+// up: the window froze for seconds on each open. Reusing the view from the first open keeps its code
+// warm. The source is compared so a changed mod still takes effect.
+const source = [LinearAgent, createWorktree, modelsFor, adapterFor, branchFor, taskFor].map(String).join();
+if (globalThis.__linearBoardAgent?.source !== source) globalThis.__linearBoardAgent = { source, view: LinearAgent };
+export default globalThis.__linearBoardAgent.view;
