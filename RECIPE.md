@@ -21,7 +21,8 @@ color, radius 10, a 1px `border`, base type 13px. Top to bottom:
   is 26px tall, 9px side padding, radius 7, 11.5px, at most 320px with the name truncated, its count
   in `dim`. The chosen one is `selected`/`foreground`, the others `raised`/`muted`.
 - **Columns**, side by side, each 280px wide with 12px between them; the row scrolls sideways when
-  they don't fit, and each column scrolls down. Column head, 34px: the state's icon at 14px, its
+  they don't fit, and each column scrolls down. Past 80 cards in all, a column ends with
+  `12 more: filter to see them` in 11px `dim`. Column head, 34px: the state's icon at 14px, its
   name at 13px medium, the count in 12px `dim`.
 - **Cards**, 8px apart, 12px side and 10px vertical padding, 6px between lines, radius 8, `raised`
   with a 1px `border`, `hover` under the pointer. All cards are the same height:
@@ -70,7 +71,8 @@ in 11px `dim`). The title block and the footer stay; the sections between them s
 - It loads issues assigned to you in the triage, backlog, unstarted and started states, up to 100 of
   each. Columns are the states that have issues, ordered triage, backlog, unstarted, started,
   review, where review is a started state with "review" in its name. In a column: Urgent, High,
-  Medium, Low, then no priority.
+  Medium, Low, then no priority. At most 80 cards show, shared out one at a time across the columns,
+  and filters reach the rest. The counts always cover every issue.
 - Every open is a new copy of the mod. The issues are kept in shared state (`linear-board.snapshot`),
   so they show at once. It then reads `~/.config/herdr-app/linear-board-issues.json` and takes that
   when it's newer.
@@ -96,7 +98,8 @@ in 11px `dim`). The title block and the footer stay; the sections between them s
   URL, an ask to read the full issue, to follow AGENTS.md/CLAUDE.md, run lint, typecheck and tests,
   push and open a PR that mentions the identifier, and not to merge or deploy. With the subagents
   option on, it also asks the agent to delegate. A skill comes first in the task as typed;
-  instructions follow as `Instructions: …`. The new space is shown.
+  instructions follow as `Instructions: …`. The new space is shown, and the dialog and the board
+  both close.
 - The dialog remembers the last agent, model, reasoning, subagents choice and skill (shared
   `linear-board-agent.last`) and caches each machine's model lists for an hour (shared
   `linear-board-agent.models`).
@@ -104,7 +107,8 @@ in 11px `dim`). The title block and the footer stay; the sections between them s
 
 ## Built from
 
-- `mods/linear-board/main.js`: one `View`, default export. `mod.json`:
+- `mods/linear-board/main.js`: the board, a `View`, default export. It makes one `Card` for each
+  card on show with `cx.new`, from `init`, event handlers and tasks, never during render. `mod.json`:
   `{ "place": "none", "title": "Linear board", "overlay": { "width": 0.94, "height": 0.9 } }`.
 - `mods/linear-board/sync.js`: pure `SYNC_TOOLS`, `SYNC_PROMPT`, `parseSync`, `parseRepos`,
   `NO_PROJECT`. The sync runs, in the home folder, with stdin closed:
@@ -114,13 +118,16 @@ in 11px `dim`). The title block and the footer stay; the sections between them s
   state type, with assignee `me`, limit 100 and the fields id, title, url, priority, createdAt,
   status, statusType, labels, team, project, parentId, gitBranchName. `parseSync` reads the issues
   from the tool results in the stream, so nothing passes through the model.
-- `mods/linear-board/board.js`: pure `STATE_COLORS`, `stateKind`, `boardColumns`, `projectsOf`,
-  `filterIssues`, `shortDate`, `ago`.
+- `mods/linear-board/card.js`: `Card`, a `View` retained as a child of the board, updated with
+  `set_props`; `stateIcon`; and `board`, the team folders and overlay id its buttons need.
+- `mods/linear-board/board.js`: pure `STATE_COLORS`, `stateKind`, `boardColumns`, `limitCards`,
+  `projectsOf`, `filterIssues`, `shortDate`, `ago`.
 - `mods/linear-board/urls.js` (`safeUrl`: https only) and `open.js` (`openUrl`, by
   `window().platform`).
 - `mods/linear-board/*.svg`: the state and priority icons and `spinner.svg`, turned with `.spin(900)`.
 - `mods/linear-board-agent/`: the dialog, a `View` opened with `openOverlay({ mod:
-  "linear-board-agent", kind: "dialog", width: 480, height: 660, props: { issue, cwd, on } })`.
+  "linear-board-agent", kind: "dialog", width: 480, height: 660, props: { issue, cwd, on, board } })`,
+  where `board` is the overlay to close after a start.
   `task.js`: pure `branchFor`, `folderName`, `worktreeFolder`, `branchProblem`, `taskFor`.
   `agents.js`: one adapter per CLI (Claude Code, Codex, OpenCode, Cursor, Pi, Gemini) for listing
   models and building flags. From `linear-agent` in dantech99/herdr-linear, adapted from `issue-agent`
@@ -142,9 +149,13 @@ in 11px `dim`). The title block and the footer stay; the sections between them s
 - Inside a running Claude session the environment carries markers that break a nested `claude -p`:
   unset them first. Leaving stdin open makes it wait.
 - A mod can't import another mod's files. The folders share nothing but the `props` of the dialog.
-- `uniform_list` and `v_virtual_list` can't hold handlers inside a row, so a card with its own
-  `Agent` button is drawn eagerly. Cards are kept light for that reason. Sizes given to
-  `v_virtual_list` also ignore the app's zoom.
+- A render has a time budget. Drawn inline, 24 full cards overrun it: the view shows `interrupted`
+  and stays on its last good frame, which here was the spinner. `herdr-app check` passes all the
+  same, so test with many cards. As child views each card has its own budget, but about 200 still
+  overrun the board's render, so it shows 80 and only makes the views it shows: making them all at
+  once overruns too.
+- `uniform_list` and `v_virtual_list` can't hold handlers inside a row, so they can't carry the
+  `Agent` button. Sizes given to `v_virtual_list` also ignore the app's zoom.
 - No `line_clamp`: the title is cut by its 42px box, with no ellipsis.
 - The MCP gives no state colors and no label colors: states use Linear's defaults by kind, and a
   label's color is picked from its name.
@@ -160,11 +171,13 @@ in 11px `dim`). The title block and the footer stay; the sections between them s
 
 - `herdr-app check mods/linear-board` and `herdr-app check mods/linear-board-agent` pass.
 - `node --test` passes.
+- With 400 issues in the snapshot the board opens without `interrupted`, shows 80 cards and says how
+  many more each column has.
 - `ctrl-shift-y` opens the board with your issues in state columns, with a spinner until the first
   sync ends.
 - Reopening it shows the issues at once, with no spinner and no sync.
 - A project button narrows the columns to that project, and it is still chosen after reopening.
 - Clicking a card opens the issue in the browser.
 - `Agent` on a card, from a space inside a git repo, Claude Code, `haiku`, `low`, Start: a new space
-  opens on `~/.herdr/worktrees/<repo>/<branch>`, its tab is named after the identifier, and the task
-  is the agent's first message.
+  opens on `~/.herdr/worktrees/<repo>/<branch>`, its tab is named after the identifier, the task is
+  the agent's first message, and the board has closed.

@@ -1,4 +1,4 @@
-// Start an agent on a Linear issue: props { issue, cwd, on }.
+// Start an agent on a Linear issue: props { issue, cwd, on, board } (board: the overlay to close too).
 // Makes a worktree from the default branch and a space running the agent with the issue as its task.
 // From the `linear-agent` mod in dantech99/herdr-linear (MIT), which adapts the `issue-agent` mod in
 // obrunogonzaga/herdr-mods (MIT, Copyright (c) 2026 Bruno Gonzaga):
@@ -147,6 +147,7 @@ export default class LinearAgent extends View {
         setShared(LAST_CHOICE, { agent: agent.key, model, effort, subagents, skill });
         run("space.new", { folder, machine: on, tab: issue.identifier, argv, task: taskFor(issue, branch, { subagents, skill, instructions }) });
         closeOverlay(props().overlay);
+        if (props().board) closeOverlay(props().board);
       } catch (e) { this.error = String(e.message ?? e); }
       finally { this.busy = false; cx.notify(); }
     });

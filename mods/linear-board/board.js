@@ -30,6 +30,18 @@ export function projectsOf(issues) {
     .sort((a, b) => (a.name === NO_PROJECT) - (b.name === NO_PROJECT) || b.count - a.count);
 }
 
+// Each column's `shown` issues: at most `limit` in all, shared out one at a time so no column starves.
+export function limitCards(columns, limit) {
+  const counts = columns.map(() => 0);
+  let left = Math.min(limit, columns.reduce((sum, c) => sum + c.issues.length, 0));
+  while (left > 0) {
+    columns.forEach((c, i) => {
+      if (left > 0 && counts[i] < c.issues.length) { counts[i]++; left--; }
+    });
+  }
+  return columns.map((c, i) => ({ ...c, shown: c.issues.slice(0, counts[i]) }));
+}
+
 export function filterIssues(issues, text, project = null) {
   const needle = (text ?? "").trim().toLowerCase();
   return issues.filter((i) => (!project || i.project === project)

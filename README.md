@@ -1,24 +1,61 @@
+<div align="center">
+
 # Linear board for Herdr
 
-A [Herdr](https://herdr.dev) mod that shows the Linear issues assigned to you as a board, and starts
-a coding agent on one in a fresh git worktree.
+**Your Linear issues as a board inside [Herdr](https://herdr.dev). Press `Agent` on a card and a coding agent starts on it in a fresh git worktree.**
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Herdr mod](https://img.shields.io/badge/Herdr-mod-4cb782.svg)](https://herdr.dev/mods)
+[![No API key](https://img.shields.io/badge/Linear%20API%20key-not%20needed-5e6ad2.svg)](#requirements)
 
 ![The Linear board with issues in state columns](preview.png)
 
-- One column per workflow state, most urgent issues first.
-- Filter by project with the buttons on top, or by id and title. The chosen project is remembered.
-- Click a card to open the issue in your browser.
-- Press `Agent` on a card, pick an agent, a model and a reasoning level, and a new space starts on
-  Linear's suggested branch with the issue as the agent's task.
+</div>
 
-It needs no Linear API key: issues come from the Linear MCP through Claude Code.
+## Why
+
+Picking up an issue usually means leaving the terminal, copying a branch name, making a worktree and
+pasting the issue into an agent. Here it's one button, in the window your agents already live in.
+
+## Features
+
+| | |
+|---|---|
+| **Board** | One column per workflow state, most urgent issues first |
+| **Project filter** | Buttons for every project you have issues in. Your choice is remembered |
+| **Search** | Filter by id or title as you type |
+| **Agent button** | Pick an agent, a model and a reasoning level, and start on Linear's suggested branch |
+| **Instant open** | Issues are cached, so the board opens with no loading screen |
+| **No API key** | Issues come from the Linear MCP through Claude Code |
+
+## How it works
+
+```mermaid
+flowchart LR
+  A[Board] -->|sync| B["claude -p"] --> C[Linear MCP]
+  A -->|Agent| D[Dialog] --> E[git worktree] --> F[New Herdr space<br/>with the agent]
+```
+
+Press `Agent`, and the mod:
+
+1. Creates a worktree at `~/.herdr/worktrees/<repo>/<branch>`, from the fetched default branch.
+2. Opens a new space there, with a tab named after the issue.
+3. Starts your agent with the issue as its first message, asking it to read the issue, run the
+   project's checks, push and open a PR. It is told not to merge or deploy.
+
+Claude Code, Codex, OpenCode, Cursor, Pi and Gemini get model choices. Any other agent Herdr knows
+starts with its own defaults.
 
 ## Requirements
 
-- The `claude` CLI, signed in, with the claude.ai Linear connector. Check it with
-  `claude -p "List my Linear issues"`.
-- Each sync costs one short `haiku` run on your Claude plan. The board keeps a cache and syncs at
-  most every 30 minutes while open, or when you press `Refresh`.
+- [Herdr](https://herdr.dev)
+- The `claude` CLI, signed in, with the claude.ai Linear connector
+
+Check the connector with:
+
+```sh
+claude -p "List my Linear issues"
+```
 
 ## Install
 
@@ -35,10 +72,23 @@ git clone https://github.com/nu0ma/herdr-linear-board && cd herdr-linear-board
 cp -R mods/linear-board mods/linear-board-agent ~/.config/herdr-app/mods/
 ```
 
-Then add `"ctrl-shift-y": "mod.open:linear-board"` to the `global` section of
-`~/.config/herdr-app/keys.json`.
+Then add the key to the `global` section of `~/.config/herdr-app/keys.json`:
 
-## Map teams to repos
+```json
+"ctrl-shift-y": "mod.open:linear-board"
+```
+
+## Usage
+
+| Action | Result |
+|---|---|
+| `ctrl-shift-y` | Open the board. `Esc` closes it |
+| Click a card | Open the issue in your browser |
+| `Agent` on a card | Open the dialog, then `Start agent` |
+| Project button | Show that project. `All` clears it |
+| `Refresh` | Sync now |
+
+## Configuration
 
 `Agent` works from the folder of the space you're in, which must be inside a git repo. To make a
 team always use one repo, create `~/.config/herdr-app/linear-board.json`:
@@ -47,16 +97,29 @@ team always use one repo, create `~/.config/herdr-app/linear-board.json`:
 { "repos": { "ENG": "~/dev/app", "OPS": "~/dev/infra" } }
 ```
 
+## Good to know
+
+- **Syncing costs a model run.** Each sync is one short `haiku` run on your Claude plan, so the board
+  syncs at most every 30 minutes while open, or when you press `Refresh`. Issues can be up to that old.
+- **Closing the board during a sync drops the result.** The next open syncs again.
+- **80 cards at most.** Herdr limits how long a render may take, so past 80 cards each column says how
+  many more it has. Filters reach the rest.
+- **Assigned issues only**, up to 100 per state type, not completed or canceled.
+- **`Not a git repository`** means the space you're in isn't a repo. Open the board from one, or map
+  the team as above.
+- **`Linear MCP gave no answer`** means the connector isn't available to `claude -p`. Run the check
+  under [Requirements](#requirements).
+
 ## What it touches
 
-- Network: `claude -p` reaches Linear through its connector, and `git fetch` runs when an agent
+- **Network:** `claude -p` reaches Linear through its connector, and `git fetch` runs when an agent
   starts.
-- Programs: `claude`, `sh`, `git`, the agents' CLIs (to list models) and your system's URL opener.
-- Files: reads `~/.config/herdr-app/linear-board.json`; writes
+- **Programs:** `claude`, `sh`, `git`, the agents' CLIs (to list models) and your system's URL opener.
+- **Files:** reads `~/.config/herdr-app/linear-board.json`; writes
   `~/.config/herdr-app/linear-board-issues.json` and the keys `linear-board.*` and
   `linear-board-agent.*` in Herdr's shared state; creates worktrees under `~/.herdr/worktrees`.
-- The agent's first message tells it to read the issue, push and open a PR. Issues are written by
-  whoever filed them, and the agent runs with whatever permissions its own config gives it.
+- **Agents:** an agent runs with whatever permissions its own config gives it. Issues are written by
+  whoever filed them, and it is asked to read them, so take care with issues from outside your team.
 
 ## Develop
 

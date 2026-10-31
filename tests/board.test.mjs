@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { ago, boardColumns, filterIssues, projectsOf } from "../mods/linear-board/board.js";
+import { ago, boardColumns, filterIssues, limitCards, projectsOf } from "../mods/linear-board/board.js";
 import { NO_PROJECT, SYNC_TOOLS, parseRepos, parseSync } from "../mods/linear-board/sync.js";
 import { safeUrl } from "../mods/linear-board/urls.js";
 
@@ -58,6 +58,14 @@ test("boardColumns orders states and puts urgent issues first", () => {
   assert.deepEqual(columns.map((c) => c.name), ["Triage", "Backlog", "Todo", "In Progress", "In Review"]);
   assert.equal(columns.at(-1).kind, "review");
   assert.deepEqual(columns[1].issues.map((i) => i.identifier), ["ENG-6", "ENG-5", "ENG-4"]);
+});
+
+test("limitCards shares the limit out so no column starves", () => {
+  const column = (n) => ({ issues: Array.from({ length: n }, (_, i) => i) });
+  const shown = (columns, limit) => limitCards(columns, limit).map((c) => c.shown.length);
+  assert.deepEqual(shown([column(10), column(1), column(10)], 6), [3, 1, 2]);
+  assert.deepEqual(shown([column(2), column(1)], 80), [2, 1]);
+  assert.deepEqual(shown([], 80), []);
 });
 
 test("ago takes an ISO date or a timestamp", () => {
