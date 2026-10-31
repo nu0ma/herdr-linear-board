@@ -40,6 +40,8 @@ flowchart LR
 
 Press `Agent` on a card to open the dialog:
 
+<p align="center"><img src="agent-dialog.png" alt="The dialog that starts an agent on an issue" width="480"></p>
+
 | Field | What it does |
 |---|---|
 | **Repository** | The folder the worktree is made from: the team's repo if mapped, else the space you're in |
