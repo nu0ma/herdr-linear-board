@@ -36,10 +36,27 @@ flowchart LR
   A -->|Agent| D[Dialog] --> E[git worktree] --> F[New Herdr space<br/>with the agent]
 ```
 
-Press `Agent`, and the mod:
+## Run an agent
+
+Press `Agent` on a card to open the dialog:
+
+| Field | What it does |
+|---|---|
+| **Repository** | The folder the worktree is made from: the team's repo if mapped, else the space you're in |
+| **Branch** | Prefilled with Linear's suggested branch. An existing branch is checked out |
+| **Instructions** | Anything the agent should know or do, for this issue only |
+| **Skill** | Typed first in the agent's message, such as `/review` in Claude Code |
+| **Agent** | One of the agents installed on that machine |
+| **Model** | Pick one, type one, or keep the agent's default |
+| **Reasoning** | The levels the chosen model supports |
+| **Ask it to use subagents** | Adds that request to the agent's message |
+
+Your agent, model, reasoning, skill and subagents choices are remembered for next time.
+
+Press `Start agent`, and the mod:
 
 1. Creates a worktree at `~/.herdr/worktrees/<repo>/<branch>`, from the fetched default branch.
-2. Opens a new space there, with a tab named after the issue.
+2. Opens a new space there, with a tab named after the issue, and closes the board.
 3. Starts your agent with the issue as its first message, asking it to read the issue, run the
    project's checks, push and open a PR. It is told not to merge or deploy.
 
