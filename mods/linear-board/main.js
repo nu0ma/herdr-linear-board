@@ -149,7 +149,7 @@ class Linear extends View {
   }
 
   card(issue, agent, t, hover, buttonHover) {
-    const status = agent ? t[agent.status] : null, urgent = agent?.status === "working" || agent?.status === "blocked";
+    const status = agent ? t[agent.status] : null;
     const parent = issue.parent ? issue.parent.title ?? issue.parent.identifier : null;
     const labels = [];
     for (let i = 0; i < issue.labels.length && i < LABEL_LIMIT; i++) {
@@ -158,7 +158,7 @@ class Linear extends View {
         .child(issue.labels[i].name));
     }
     return v_flex().id(`card-${issue.identifier}`).relative().flex_none().w_full().px(12).py(10).gap(6).rounded(8).overflow_hidden().cursor_pointer()
-      .bg(t.raised).border_1().border_color(urgent ? status : t.border).hover(hover).on_click(() => openUrl(issue.url))
+      .bg(t.raised).border_1().border_color(status ?? t.border).hover(hover).on_click(() => openUrl(issue.url))
       .child(h_flex().flex_none().gap(5).items_center().text_size(11.5).text_color(t.dim)
         .child(div().flex_none().child(issue.identifier))
         .children(parent ? [div().flex_none().child("›"), div().flex_1().min_w(0).truncate().child(parent)] : []))

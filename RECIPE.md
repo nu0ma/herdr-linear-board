@@ -86,8 +86,8 @@ in 11px `dim`). The title block and the footer stay; the sections between them s
   case-insensitively, together with the project, and resets when the board reopens.
 - A card with an agent on it (`agents()`: its tab or space name, or its pane's branch, holds the issue
   id) shows the agent's status where `Agent` would be: `Working` with a spinner, `Needs you`, `Done` or
-  `Idle`, in that status's theme color, and Working and Needs you color the card's border. A click goes
-  to the agent and closes the popup.
+  `Idle`, in that status's theme color, which also colors the card's border. A click goes to the agent
+  and closes the popup.
 - A click on a card opens the issue on this computer: `open` on macOS, `explorer` on Windows,
   `xdg-open` elsewhere. Only `https:` links are opened.
 - `Agent` opens the dialog without opening the browser. The repository is the team's folder in
