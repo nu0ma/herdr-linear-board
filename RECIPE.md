@@ -104,6 +104,8 @@ in 11px `dim`). The title block and the footer stay; the sections between them s
 - The dialog remembers the last agent, model, reasoning, subagents choice and skill (shared
   `linear-board-agent.last`) and caches each machine's model lists for an hour (shared
   `linear-board-agent.models`).
+- `mod.open` while the board is open closes it, so its key is a toggle. A second `mod.open` starts a
+  second copy, which closes the first and itself. The open overlay id is kept on `globalThis`.
 - Command: `linear-board.refresh` syncs. It reaches shown copies only.
 
 ## Built from
@@ -183,6 +185,7 @@ in 11px `dim`). The title block and the footer stay; the sections between them s
 - `node --test` passes.
 - With 400 issues in the snapshot the board opens without `interrupted`, shows 80 cards and says how
   many more each column has.
+- Pressing `ctrl-shift-y` with the board open closes it.
 - `ctrl-shift-y` opens the board with your issues in state columns, with a spinner until the first
   sync ends.
 - Reopening it shows the issues at once, with no spinner and no sync, and the window doesn't freeze.

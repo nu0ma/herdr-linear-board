@@ -101,7 +101,7 @@ Then add the key to the `global` section of `~/.config/herdr-app/keys.json`:
 
 | Action | Result |
 |---|---|
-| `ctrl-shift-y` | Open the board. `Esc` closes it |
+| `ctrl-shift-y` | Open the board. Press it again, or `Esc`, to close it |
 | Click a card | Open the issue in your browser |
 | `Agent` on a card | Open the dialog, then `Start agent` |
 | Project button | Show that project. `All` clears it |

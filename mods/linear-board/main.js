@@ -2,7 +2,7 @@
 // agent on it in a new worktree.
 import { View, div, svg } from "gpui-kit";
 import { v_flex, h_flex, InputState, Input } from "gpui-base";
-import { exec, theme, home, appHome, props, readTextFile, writeTextFile, nextCommand, shared, setShared } from "herdr";
+import { exec, theme, home, appHome, props, readTextFile, writeTextFile, nextCommand, shared, setShared, closeOverlay } from "herdr";
 import { SYNC_PROMPT, SYNC_TOOLS, parseRepos, parseSync } from "./sync.js";
 import { ago, boardColumns, filterIssues, limitCards, projectsOf } from "./board.js";
 import { Card, board, stateIcon } from "./card.js";
@@ -32,6 +32,15 @@ async function syncIssues() {
 
 class Linear extends View {
   init(_props, cx) {
+    // Pressing the key again opens a second copy: close both, so the key toggles the board.
+    this.overlay = props()?.overlay ?? null;
+    if (this.overlay && globalThis.__linearBoardOpen) {
+      this.toggledOff = true;
+      closeOverlay(globalThis.__linearBoardOpen);
+      closeOverlay(this.overlay);
+      return;
+    }
+    globalThis.__linearBoardOpen = this.overlay;
     this.issues = []; this.cards = new Map(); this.text = ""; this.loading = false; this.project = shared(PROJECT_KEY) ?? null;
     board.overlay = props()?.overlay ?? null;
     // Every open is a new copy: the cache in shared state is there at once, the file isn't.
@@ -135,7 +144,12 @@ class Linear extends View {
     return this.issues.length ? "No issues match this filter" : "No open issues assigned to you";
   }
 
+  close() {
+    if (!this.toggledOff) globalThis.__linearBoardOpen = null;
+  }
+
   render() {
+    if (this.toggledOff) return div();
     const t = theme(), projects = projectsOf(this.issues);
     const project = this.activeProject(), columns = this.columns();
     const waiting = !this.loaded || (this.loading && !this.issues.length);
