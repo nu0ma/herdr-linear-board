@@ -70,6 +70,6 @@ empty folder.
 
 ## License
 
-[MIT](LICENSE). Built from [dantech99/herdr-linear](https://github.com/dantech99/herdr-linear) (MIT).
-The agent dialog comes from there and is adapted from `issue-agent` in
+[MIT](LICENSE). Built from [dantech99/herdr-linear](https://github.com/dantech99/herdr-linear) (MIT);
+the agent dialog is adapted from `issue-agent` in
 [obrunogonzaga/herdr-mods](https://github.com/obrunogonzaga/herdr-mods) (MIT).
