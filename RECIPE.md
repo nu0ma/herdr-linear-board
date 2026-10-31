@@ -25,9 +25,9 @@ color, radius 10, a 1px `border`, base type 13px. Top to bottom:
   `12 more: filter to see them` in 11px `dim`. Column head, 34px: the state's icon at 14px, its
   name at 13px medium, the count in 12px `dim`.
 - **Cards**, 8px apart, 12px side and 10px vertical padding, 6px between lines, radius 8, `raised`
-  with a 1px `border`, `hover` under the pointer. All cards are the same height:
+  with a 1px `border`, `hover` under the pointer. Cards are the same height unless a title needs more:
   - `ENG-124 › Parent title` at 11.5px `dim`, the parent truncated.
-  - The state icon at 14px beside the title at 13px, in a 42px box: two lines, the rest cut off.
+  - The state icon at 14px beside the title at 13px, at least 42px tall: the whole title, never truncated.
   - A row of 22px pills with a 1px `border`, fully rounded: the priority, 28px wide, then up to
     three labels (8px side padding, 11px `muted`, an 8px dot in the label's color).
   - `Created Oct 28` at 11.5px `dim`.
@@ -156,7 +156,6 @@ in 11px `dim`). The title block and the footer stay; the sections between them s
   once overruns too.
 - `uniform_list` and `v_virtual_list` can't hold handlers inside a row, so they can't carry the
   `Agent` button. Sizes given to `v_virtual_list` also ignore the app's zoom.
-- No `line_clamp`: the title is cut by its 42px box, with no ellipsis.
 - The MCP gives no state colors and no label colors: states use Linear's defaults by kind, and a
   label's color is picked from its name.
 - A sync still running when the popup closes is cancelled, and its result is lost.

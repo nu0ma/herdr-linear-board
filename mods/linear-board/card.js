@@ -7,7 +7,7 @@ import { STATE_COLORS, shortDate, stateKind } from "./board.js";
 import { openUrl } from "./open.js";
 
 const CARD_RADIUS = 8;
-// Two lines of title, so cards line up across columns.
+// Room for two lines, so short titles line up. Longer ones make their card taller.
 const TITLE_HEIGHT = 42;
 const LABEL_LIMIT = 3;
 const URGENT = "#f2681f";
@@ -68,7 +68,7 @@ export class Card extends View {
       .child(h_flex().flex_none().gap(5).items_center().text_size(11.5).text_color(t.dim)
         .child(div().flex_none().child(issue.identifier))
         .when(Boolean(parent), (e) => e.child(div().flex_none().child("›")).child(div().flex_1().min_w(0).truncate().child(parent))))
-      .child(h_flex().flex_none().h(TITLE_HEIGHT).gap(7).items_start().overflow_hidden()
+      .child(h_flex().flex_none().min_h(TITLE_HEIGHT).gap(7).items_start()
         .child(div().flex_none().pt(2).child(stateIcon(stateKind(issue))))
         .child(div().flex_1().min_w(0).text_size(13).child(issue.title)))
       .child(h_flex().flex_none().gap(5).items_center().overflow_hidden()
