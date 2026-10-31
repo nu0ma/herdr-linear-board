@@ -8,7 +8,7 @@
 [![Herdr mod](https://img.shields.io/badge/Herdr-mod-4cb782.svg)](https://herdr.dev/mods)
 [![No API key](https://img.shields.io/badge/Linear%20API%20key-not%20needed-5e6ad2.svg)](#requirements)
 
-<img src="demo.gif" alt="Filtering the board by project, pressing Agent on a card and Claude Code starting on the issue" width="100%">
+<img src="preview.png" alt="The board with cards marked Working, Needs you, Done and Idle" width="100%">
 
 </div>
 
@@ -34,8 +34,6 @@ pasting the issue into an agent. Here it's one button, in the window your agents
 Cards show the agent working on each issue, so you can tell what's moving and what needs you. Click a
 status to go to that agent.
 
-<img src="preview.png" alt="The board with cards marked Working, Needs you, Done and Idle" width="100%">
-
 ## How it works
 
 ```mermaid
@@ -45,6 +43,8 @@ flowchart LR
 ```
 
 ## Run an agent
+
+<img src="demo.gif" alt="Filtering the board by project, pressing Agent on a card and Claude Code starting on the issue" width="100%">
 
 Press `Agent` on a card to open the dialog:
 
