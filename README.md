@@ -29,6 +29,13 @@ pasting the issue into an agent. Here it's one button, in the window your agents
 | **Instant open** | Issues are cached, so the board opens with no loading screen |
 | **No API key** | Issues come from the Linear MCP through Claude Code |
 
+## See what your agents are doing
+
+Cards show the agent working on each issue, so you can tell what's moving and what needs you. Click a
+status to go to that agent.
+
+<img src="preview.png" alt="The board with cards marked Working, Needs you, Done and Idle" width="100%">
+
 ## How it works
 
 ```mermaid
