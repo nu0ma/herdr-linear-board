@@ -8,7 +8,12 @@
 [![Herdr mod](https://img.shields.io/badge/Herdr-mod-4cb782.svg)](https://herdr.dev/mods)
 [![No API key](https://img.shields.io/badge/Linear%20API%20key-not%20needed-5e6ad2.svg)](#requirements)
 
-![The Linear board with issues in state columns](preview.png)
+<p>
+  <img src="preview.png" alt="The Linear board with issues in state columns" width="61%">
+  <img src="agent-dialog.png" alt="The dialog that starts an agent on an issue" width="35%">
+</p>
+
+<sub>Your issues by state on the left. Start an agent on one from the dialog on the right.</sub>
 
 </div>
 
@@ -39,8 +44,6 @@ flowchart LR
 ## Run an agent
 
 Press `Agent` on a card to open the dialog:
-
-<p align="center"><img src="agent-dialog.png" alt="The dialog that starts an agent on an issue" width="480"></p>
 
 | Field | What it does |
 |---|---|
