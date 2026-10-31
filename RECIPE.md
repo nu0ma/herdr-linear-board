@@ -84,6 +84,10 @@ in 11px `dim`). The title block and the footer stay; the sections between them s
   (`linear-board.project`) and survives closing and restarting; `All` clears it. A project that no
   longer has issues counts as `All`. The text field filters as you type, by identifier and title,
   case-insensitively, together with the project, and resets when the board reopens.
+- A card with an agent on it (`agents()`: its tab or space name, or its pane's branch, holds the issue
+  id) shows the agent's status where `Agent` would be: `Working` with a spinner, `Needs you`, `Done` or
+  `Idle`, in that status's theme color, and Working and Needs you color the card's border. A click goes
+  to the agent and closes the popup.
 - A click on a card opens the issue on this computer: `open` on macOS, `explorer` on Windows,
   `xdg-open` elsewhere. Only `https:` links are opened.
 - `Agent` opens the dialog without opening the browser. The repository is the team's folder in
@@ -114,7 +118,7 @@ in 11px `dim`). The title block and the footer stay; the sections between them s
   columns and cards itself, in one render with one `card` method. `mod.json`:
   `{ "place": "none", "title": "Linear board", "overlay": { "width": 0.94, "height": 0.9 } }`.
 - `mods/linear-board/sync.js`: pure `SYNC_TOOLS`, `SYNC_PROMPT`, `parseSync`, `parseRepos`,
-  `NO_PROJECT`. The sync runs, in the home folder, with stdin closed:
+  `NO_PROJECT`. The sync runs detached, in the home folder, with stdin closed:
   `claude -p <prompt> --model haiku --output-format stream-json --verbose --tools "" --allowedTools
   <the two list_issues tools> --no-session-persistence`, through `sh -c`, after unsetting
   `CLAUDECODE` and `CLAUDE_CODE_*`. The prompt asks for four parallel `list_issues` calls, one per
@@ -138,7 +142,7 @@ in 11px `dim`). The title block and the footer stay; the sections between them s
   `readTextFile`, `writeTextFile`, `nextCommand`, `openOverlay`, `closeOverlay`, `props`,
   `knownAgents`, `run`, `shared`, `setShared`.
 - Reaches the network through `claude -p` and `git fetch`. Runs `claude`, `sh`, `git`, the agents'
-  CLIs and the system's opener. Writes `linear-board-issues.json` and worktrees under
+  CLIs and the system's opener. Writes `linear-board-issues.json`, `linear-board-sync.jsonl` and worktrees under
   `~/.herdr/worktrees`.
 
 ## Watch out
@@ -170,7 +174,11 @@ in 11px `dim`). The title block and the footer stay; the sections between them s
   `Agent` button. Sizes given to `v_virtual_list` also ignore the app's zoom.
 - The MCP gives no state colors and no label colors: states use Linear's defaults by kind, and a
   label's color is picked from its name.
-- A sync still running when the popup closes is cancelled, and its result is lost.
+- Closing the popup ends the copy's tasks, not a program it started, so a sync held in a task keeps
+  running with its result lost, and every open pays for another. So the sync runs detached and writes
+  `linear-board-sync.jsonl`: its start time, the stream and its exit code, moved into place when done.
+  The board polls that file each second, also after a reopen, and `globalThis` marks a sync as running
+  for up to 5 minutes. `readTextFile` stops at 1 MiB, so the result is read with `cat`.
 - Closing the popup and reopening starts a new copy: anything that must survive goes in shared state.
 - `task` is typed into the agent as one line: every text in it has control characters and runs of
   whitespace replaced by one space.

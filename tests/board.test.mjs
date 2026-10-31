@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { ago, boardColumns, filterIssues, limitCards, projectsOf } from "../mods/linear-board/board.js";
-import { NO_PROJECT, SYNC_TOOLS, parseRepos, parseSync } from "../mods/linear-board/sync.js";
+import { ago, boardColumns, filterIssues, issueAgents, limitCards, projectsOf } from "../mods/linear-board/board.js";
+import { NO_PROJECT, SYNC_TOOLS, parseRepos, parseSync, parseSyncResult } from "../mods/linear-board/sync.js";
 import { safeUrl } from "../mods/linear-board/urls.js";
 
 const stream = (results) => results.flatMap(([state, content], i) => [
@@ -79,4 +79,26 @@ test("safeUrl lets only https through", () => {
   assert.equal(safeUrl("http://linear.app/x"), null);
   assert.equal(safeUrl("file:///etc/passwd"), null);
   assert.equal(safeUrl("--help"), null);
+});
+
+test("parseSyncResult reads a finished sync and reports a failed one", () => {
+  const issues = stream([["triage", answer()], ["backlog", answer([raw])], ["unstarted", answer()], ["started", answer()]]);
+  const done = parseSyncResult(`{"startedAt":5000}\n${issues}\n\n{"exit":0}\n`);
+  assert.equal(done.at, 5000);
+  assert.equal(done.issues.length, 1);
+  assert.throws(() => parseSyncResult('{"startedAt":5000}\nnot signed in\n\n{"exit":1}\n'), /not signed in/);
+});
+
+test("issueAgents finds the agent by tab, space or branch, the most urgent first", () => {
+  const agent = (over) => ({ pane: "p1", tab_name: "1", space_name: "app", status: "idle", ...over });
+  const found = issueAgents([
+    agent({ tab_name: "ENG-1" }),
+    agent({ pane: "p2", space_name: "eng-2" }),
+    agent({ pane: "p3" }),
+    agent({ pane: "p4", tab_name: "ENG-1", status: "blocked" }),
+  ], new Map([["p3", "someone/eng-3-fix-login"]]));
+  assert.equal(found.get("ENG-1").status, "blocked");
+  assert.equal(found.get("ENG-2").pane, "p2");
+  assert.equal(found.get("ENG-3").pane, "p3");
+  assert.equal(found.size, 3);
 });

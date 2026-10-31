@@ -25,6 +25,7 @@ pasting the issue into an agent. Here it's one button, in the window your agents
 | **Project filter** | Buttons for every project you have issues in. Your choice is remembered |
 | **Search** | Filter by id or title as you type |
 | **Agent button** | Pick an agent, a model and a reasoning level, and start on Linear's suggested branch |
+| **Live agent status** | A card with an agent on it shows Working, Needs you, Done or Idle. Click to go there |
 | **Instant open** | Issues are cached, so the board opens with no loading screen |
 | **No API key** | Issues come from the Linear MCP through Claude Code |
 
@@ -123,7 +124,8 @@ team always use one repo, create `~/.config/herdr-app/linear-board.json`:
 - **A Herdr that has run for a long time can freeze for a few seconds** over the first opens of the
   board, as its JIT warms up the mod's code. Later opens are nearly instant, and restarting Herdr
   clears it. Your terminals keep running.
-- **Closing the board during a sync drops the result.** The next open syncs again.
+- **Closing the board doesn't stop a sync.** It finishes in the background, and the next open picks up
+  its result without another run.
 - **80 cards at most.** Herdr limits how long a render may take, so past 80 cards each column says how
   many more it has. Filters reach the rest.
 - **Assigned issues only**, up to 100 per state type, not completed or canceled.
@@ -140,7 +142,7 @@ team always use one repo, create `~/.config/herdr-app/linear-board.json`:
   starts.
 - **Programs:** `claude`, `sh`, `git`, the agents' CLIs (to list models) and your system's URL opener.
 - **Files:** reads `~/.config/herdr-app/linear-board.json`; writes
-  `~/.config/herdr-app/linear-board-issues.json` and the keys `linear-board.*` and
+  `~/.config/herdr-app/linear-board-issues.json`, `linear-board-sync.jsonl` while a sync finishes, and the keys `linear-board.*` and
   `linear-board-agent.*` in Herdr's shared state; creates worktrees under `~/.herdr/worktrees`.
 - **Agents:** an agent runs with whatever permissions its own config gives it. Issues are written by
   whoever filed them, and it is asked to read them, so take care with issues from outside your team.

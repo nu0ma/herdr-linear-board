@@ -66,6 +66,23 @@ export function limitCards(columns, limit) {
   return limited;
 }
 
+const ISSUE_ID = /[A-Z][A-Z0-9]*-\d+/g;
+const AGENT_RANK = { blocked: 3, working: 2, done: 1, idle: 0 };
+
+// The agent on each issue, the most urgent if there are several: the Agent dialog names its tab after
+// the issue, and a branch or space can carry the id too. `branches` maps a pane to its git branch.
+export function issueAgents(agents, branches) {
+  const found = new Map();
+  for (const agent of agents) {
+    const ids = `${agent.tab_name} ${agent.space_name} ${branches.get(agent.pane) ?? ""}`.toUpperCase().match(ISSUE_ID) ?? [];
+    for (const id of ids) {
+      const held = found.get(id);
+      if (!held || AGENT_RANK[agent.status] > AGENT_RANK[held.status]) found.set(id, agent);
+    }
+  }
+  return found;
+}
+
 export function filterIssues(issues, text, project = null) {
   const needle = (text ?? "").trim().toLowerCase();
   if (!project && !needle) return issues;

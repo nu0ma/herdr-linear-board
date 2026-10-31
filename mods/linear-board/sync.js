@@ -48,6 +48,14 @@ export function parseSync(stream) {
   return issues.map((i) => ({ ...i, parent: i.parentId ? { identifier: i.parentId, title: byId.get(i.parentId)?.title ?? null } : null }));
 }
 
+// The file a sync leaves: its start time, the stream, its exit code. Throws if it failed.
+export function parseSyncResult(text) {
+  const lines = text.split("\n").filter(Boolean);
+  const { startedAt } = JSON.parse(lines[0]), { exit } = JSON.parse(lines.at(-1));
+  if (exit !== 0) throw new Error(lines.at(-2) || "claude -p failed");
+  return { at: startedAt, issues: parseSync(text) };
+}
+
 // `~/.config/herdr-app/linear-board.json`: { "repos": { "<TEAM KEY>": "~/dev/repo" } }.
 export function parseRepos(text, home) {
   if (text == null) return {};
